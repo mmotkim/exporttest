@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run export.js",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/exportExcel.js"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "Run the export.js file using Node.js"
+    }
+  ]
+}
