@@ -652,28 +652,70 @@ async function processExcel(worksheet, data, imageId) {
   worksheet.mergeCells(`${userValueStartLetter}10:${rightColumnLetter}10`);
   worksheet.getCell(`${userValueStartLetter}10`).value = currentDate;
 
+  // Define a light brown fill
+  const lightBrownFill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFF2CC" }, // Light brown color
+  };
+
+  // Define border style
+  const borderStyle = {
+    top: { style: "thin" },
+    left: { style: "thin" },
+    bottom: { style: "thin" },
+    right: { style: "thin" },
+  };
+
+  // Apply fill and border to 'Company Name', 'Fiscal Year', 'User', and 'Date' header cells
+  const headerCells = ["B9", "B10", `${userStartColumnLetter}9`, `${userStartColumnLetter}10`];
+  headerCells.forEach((cellAddress) => {
+    const cell = worksheet.getCell(cellAddress);
+    cell.fill = lightBrownFill;
+    cell.border = borderStyle;
+  });
+
+  // Apply borders to their adjacent value cells (merged cells)
+  const valueRanges = [
+    `C9:${middleColumnLetter}9`,
+    `C10:${middleColumnLetter}10`,
+    `${userValueStartLetter}9:${rightColumnLetter}9`,
+    `${userValueStartLetter}10:${rightColumnLetter}10`,
+  ];
+  valueRanges.forEach((rangeAddress) => {
+    const [startCell, endCell] = rangeAddress.split(":");
+    const startColumn = worksheet.getColumn(startCell.replace(/\d+/, ""));
+    const endColumn = worksheet.getColumn(endCell.replace(/\d+/, ""));
+    const rowNumber = parseInt(startCell.match(/\d+/)[0]);
+
+    for (let colIndex = startColumn.number; colIndex <= endColumn.number; colIndex++) {
+      const cell = worksheet.getCell(rowNumber, colIndex);
+      cell.border = borderStyle;
+    }
+  });
+
   // Move to B12 for data columns and rows
   const startRow = 12;
 
-  // Set column headers starting from column B
+  // Adjust the column definitions to start from column B
   data.columns.forEach((col, index) => {
     const columnLetter = String.fromCharCode(66 + index); // 66 is 'B'
     const cellAddress = `${columnLetter}${startRow}`;
-    worksheet.getCell(cellAddress).value = col.header;
+    const cell = worksheet.getCell(cellAddress);
+    cell.value = col.header;
+    cell.fill = lightBrownFill;
+    cell.border = borderStyle;
     worksheet.getColumn(columnLetter).width = col.width;
   });
 
-  // Add data rows starting from startRow + 1
+  // Apply borders to data cells
   data.rows.forEach((rowData, rowIndex) => {
     rowData.forEach((value, colIndex) => {
       const columnLetter = String.fromCharCode(66 + colIndex); // Start from 'B'
       const cellAddress = `${columnLetter}${startRow + 1 + rowIndex}`;
-      worksheet.getCell(cellAddress).value = value;
+      const cell = worksheet.getCell(cellAddress);
+      cell.value = value;
+      cell.border = borderStyle;
     });
   });
-
-  // //add all those data to the actual worksheet
-  // worksheet.columns = data.columns;
-  // worksheet.addRows(data.rows);
-  const row = worksheet.lastrow;
 }
